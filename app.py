@@ -56,8 +56,14 @@ def predict():
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
 
-    # Run YOLO prediction (ignore detections below 50%)
-    results = model(filepath, conf=0.50)
+    # 🚀 Optimized YOLO prediction for Render Free plan
+    results = model(
+        filepath,
+        conf=0.50,
+        imgsz=640,
+        device="cpu",
+        half=False
+    )
 
     # Default assumption: Healthy
     risk = "Healthy / No Cancer Detected"
@@ -67,7 +73,6 @@ def predict():
     # Check detections
     for r in results:
         if len(r.boxes) > 0:
-            # Take highest confidence detection
             highest_conf = max(float(box.conf) for box in r.boxes)
             confidence = highest_conf
             cancer_status = "YES"
@@ -92,8 +97,7 @@ def predict():
     )
 
 
-import os
-
+# ✅ Correct Port Binding for Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
