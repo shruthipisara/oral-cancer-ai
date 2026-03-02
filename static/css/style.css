@@ -1,0 +1,140 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: linear-gradient(to right, #e3f2fd, #f8fbff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Login & Result Containers */
+.container {
+    width: 420px;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.container-large {
+    width: 650px;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+/* Navbar */
+.navbar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background: #0d47a1;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Inputs */
+input {
+    width: 95%;
+    padding: 12px;
+    margin: 12px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* Buttons */
+button {
+    width: 100%;
+    padding: 12px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0d47a1;
+}
+
+/* Result Image */
+.result-img {
+    width: 100%;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+/* Result Boxes */
+.result-box {
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.high-risk {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.moderate-risk {
+    background: #fff8e1;
+    color: #ef6c00;
+}
+
+.safe {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.error {
+    color: red;
+}
+.preview-box {
+    margin: 20px 0;
+}
+
+.preview-box img {
+    width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    border: 2px solid #1976d2;
+}
+
+.feature-grid {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.feature-card {
+    background: #f4f9ff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: left;
+}
+
+.feature-card h4 {
+    color: #0d47a1;
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    font-size: 14px;
+    color: #444;
+}
