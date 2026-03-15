@@ -12,7 +12,7 @@ RESULT_FOLDER = "static/results"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
 
-# Load trained model
+# Load trained YOLO model
 model = YOLO("oral_cancer_model.pt")
 
 
@@ -40,6 +40,7 @@ def dashboard():
 
 @app.route("/predict", methods=["POST"])
 def predict():
+
     if "user" not in session:
         return redirect("/")
 
@@ -56,33 +57,37 @@ def predict():
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
 
-    # 🚀 Optimized YOLO prediction for Render Free plan
+    # YOLO prediction
     results = model(
         filepath,
-        conf=0.50,
+        conf=0.35,   # Slightly lower threshold for early detection
         imgsz=640,
         device="cpu",
         half=False
     )
 
-    # Default assumption: Healthy
+    # Default assumption
     risk = "Healthy / No Cancer Detected"
     cancer_status = "NO"
-    confidence = 0.0
+    confidence_percent = 0
 
-    # Check detections
+    # Process detection results
     for r in results:
         if len(r.boxes) > 0:
+
+            # Get highest confidence detection
             highest_conf = max(float(box.conf) for box in r.boxes)
-            confidence = highest_conf
+
+            confidence_percent = round(highest_conf * 100, 2)
             cancer_status = "YES"
 
-            if confidence >= 0.85:
-                risk = "High Risk of Cancer"
-            elif confidence >= 0.60:
-                risk = "Moderate Risk - Review Recommended"
+            # Risk classification
+            if confidence_percent >= 75:
+                risk = "High Risk Lesion Detected"
+            elif confidence_percent >= 50:
+                risk = "Moderate Risk - Clinical Review Recommended"
             else:
-                risk = "Low Suspicion - Clinical Review Suggested"
+                risk = "Low Suspicion - Monitor Patient"
 
     # Save image with bounding boxes
     result_path = os.path.join(RESULT_FOLDER, filename)
@@ -91,13 +96,13 @@ def predict():
     return render_template(
         "result.html",
         image=filename,
-        confidence=round(confidence * 100, 2),
+        confidence=confidence_percent,
         risk=risk,
         cancer_status=cancer_status
     )
 
 
-# ✅ Correct Port Binding for Render
+# Run server (important for Render deployment)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)

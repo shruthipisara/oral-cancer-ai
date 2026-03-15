@@ -1,42 +1,63 @@
+/* =========================
+   Global Page Styling
+========================= */
+
 body {
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
-    background: linear-gradient(to right, #e3f2fd, #f8fbff);
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb, #e1f5fe);
+    background-attachment: fixed;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
 }
 
-/* Login & Result Containers */
+/* =========================
+   Containers
+========================= */
+
 .container {
     width: 420px;
-    background: white;
+    background: #ffffff;
     padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
     text-align: center;
 }
 
 .container-large {
-    width: 650px;
-    background: white;
+    width: 900px;
+    background: #ffffff;
     padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-    text-align: center;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
 }
 
-/* Navbar */
+/* =========================
+   Headings
+========================= */
+
+h2 {
+    color: #0d47a1;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+/* =========================
+   Navbar
+========================= */
+
 .navbar {
     position: absolute;
     top: 0;
     width: 100%;
-    background: #0d47a1;
+    background: linear-gradient(45deg,#0d47a1,#1976d2);
     color: white;
     padding: 15px 30px;
     display: flex;
     justify-content: space-between;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 .navbar a {
@@ -45,45 +66,108 @@ body {
     font-weight: bold;
 }
 
-/* Inputs */
+/* =========================
+   Inputs
+========================= */
+
 input {
     width: 95%;
     padding: 12px;
     margin: 12px 0;
     border-radius: 8px;
     border: 1px solid #ccc;
+    transition: all 0.3s;
 }
 
-/* Buttons */
+input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 5px rgba(25,118,210,0.4);
+    outline: none;
+}
+
+/* =========================
+   Buttons
+========================= */
+
 button {
     width: 100%;
     padding: 12px;
-    background: #1976d2;
+    background: linear-gradient(45deg,#1976d2,#42a5f5);
     color: white;
     border: none;
     border-radius: 8px;
     font-size: 16px;
     cursor: pointer;
+    transition: all 0.3s;
 }
 
 button:hover {
-    background: #0d47a1;
+    background: linear-gradient(45deg,#0d47a1,#1976d2);
+    transform: scale(1.04);
 }
 
-/* Result Image */
-.result-img {
-    width: 100%;
-    border-radius: 10px;
+/* =========================
+   Image Preview
+========================= */
+
+.preview-box {
     margin: 20px 0;
 }
 
-/* Result Boxes */
+.preview-box img {
+    width: 100%;
+    max-height: 300px;
+    border-radius: 10px;
+    border: 3px solid #1976d2;
+}
+
+/* =========================
+   Detection Result Image
+========================= */
+
+.result-img {
+    width: 100%;
+    max-width: 350px;
+    border-radius: 12px;
+    margin: 20px 0;
+    border: 3px solid #1976d2;
+}
+
+/* =========================
+   Result Layout
+========================= */
+
+.result-layout {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+}
+
+.result-image {
+    flex: 1;
+    text-align: center;
+}
+
+.result-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* =========================
+   Result Boxes
+========================= */
+
 .result-box {
     padding: 15px;
     border-radius: 10px;
-    margin-top: 15px;
     font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
+
+/* Risk Levels */
 
 .high-risk {
     background: #ffebee;
@@ -103,16 +187,29 @@ button:hover {
 .error {
     color: red;
 }
-.preview-box {
-    margin: 20px 0;
+
+/* =========================
+   Analyze Button
+========================= */
+
+.analyze-btn {
+    margin-top: 15px;
+    padding: 12px;
+    background: linear-gradient(45deg,#1976d2,#42a5f5);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
 }
 
-.preview-box img {
-    width: 100%;
-    max-height: 300px;
-    border-radius: 10px;
-    border: 2px solid #1976d2;
+.analyze-btn:hover {
+    background: linear-gradient(45deg,#0d47a1,#1976d2);
 }
+
+/* =========================
+   Feature Section
+========================= */
 
 .feature-grid {
     margin-top: 40px;
@@ -122,11 +219,16 @@ button:hover {
 }
 
 .feature-card {
-    background: #f4f9ff;
+    background: #f7fbff;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border-radius: 14px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
     text-align: left;
+    transition: all 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
 }
 
 .feature-card h4 {
@@ -137,4 +239,17 @@ button:hover {
 .feature-card p {
     font-size: 14px;
     color: #444;
+}
+.loading{
+    font-size:18px;
+    color:#1976d2;
+    font-weight:bold;
+    margin-top:20px;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink{
+    0%{opacity:1;}
+    50%{opacity:0.5;}
+    100%{opacity:1;}
 }
