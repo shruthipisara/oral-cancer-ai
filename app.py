@@ -21,9 +21,26 @@ os.makedirs(RESULT_FOLDER, exist_ok=True)
 # MODEL CONFIG
 # =========================
 MODEL_URL = "https://huggingface.co/shruthipisara/oral-cancer-ai/resolve/main/oral_cancer_model.pt"
-MODEL_PATH = "oral_cancer_model.pt"
+MODEL_PATH = "/tmp/oral_cancer_model.pt"
 
 model = None
+
+# =========================
+# LOAD MODEL ON START (IMPORTANT)
+# =========================
+def load_model():
+    global model
+    if model is None:
+        if not os.path.exists(MODEL_PATH):
+            print("Downloading model...")
+            r = requests.get(MODEL_URL)
+            with open(MODEL_PATH, "wb") as f:
+                f.write(r.content)
+
+        print("Loading model...")
+        model = YOLO(MODEL_PATH)
+
+load_model()
 
 # =========================
 # ROUTES
@@ -49,8 +66,6 @@ def dashboard():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    global model
-
     if "user" not in session:
         return redirect("/")
 
@@ -59,44 +74,21 @@ def predict():
         return redirect("/dashboard")
 
     try:
-        # =========================
-        # STEP 1: Download model (only once)
-        # =========================
-        if not os.path.exists(MODEL_PATH):
-            print("Downloading model from Hugging Face...")
-            r = requests.get(MODEL_URL, timeout=60)
-            with open(MODEL_PATH, "wb") as f:
-                f.write(r.content)
-            print("Model downloaded.")
-
-        # =========================
-        # STEP 2: Load model (only once)
-        # =========================
-        if model is None:
-            print("Loading YOLO model...")
-            model = YOLO(MODEL_PATH)
-
-        # =========================
-        # STEP 3: Save image
-        # =========================
+        # Save image
         filename = str(uuid.uuid4()) + ".jpg"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # =========================
-        # STEP 4: Prediction (optimized)
-        # =========================
+        # 🔥 Faster prediction (important)
         results = model.predict(
             source=filepath,
-            conf=0.35,
-            imgsz=512,   # 🔥 reduced size for speed
+            conf=0.3,
+            imgsz=320,   # reduced for speed
             device="cpu",
             verbose=False
         )
 
-        # =========================
-        # STEP 5: Process result
-        # =========================
+        # Defaults
         risk = "Healthy / No Cancer Detected"
         cancer_status = "NO"
         confidence_percent = 0
@@ -114,9 +106,7 @@ def predict():
                 else:
                     risk = "Low Suspicion - Monitor Patient"
 
-        # =========================
-        # STEP 6: Save result image
-        # =========================
+        # Save result image
         result_path = os.path.join(RESULT_FOLDER, filename)
         results[0].save(filename=result_path)
 
@@ -132,12 +122,11 @@ def predict():
 
     except Exception as e:
         print("ERROR:", str(e))
-        return "Internal Server Error - Check logs"
-
+        return "Server Error: Check logs"
 
 # =========================
 # ENTRY POINT
 # =========================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port)s
