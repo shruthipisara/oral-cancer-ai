@@ -9,21 +9,21 @@ app.secret_key = "securekey123"
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ✅ YOUR REAL HF SPACE API
+# ✅ YOUR HF SPACE API (CORRECT)
 HF_API_URL = "https://shruthipisara-oral-cancer-app.hf.space/run/predict"
 
 # =========================
-# LOGIN
+# LOGIN (NO RESTRICTION)
 # =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if request.form["username"] == "doctor" and request.form["password"] == "admin123":
-            session["user"] = "doctor"
-            return redirect("/dashboard")
-        else:
-            return render_template("login.html", error="Invalid Credentials")
+        # ✅ Accept ANY username/password
+        session["user"] = request.form.get("username", "guest")
+        return redirect("/dashboard")
+
     return render_template("login.html")
+
 
 # =========================
 # DASHBOARD
@@ -33,6 +33,7 @@ def dashboard():
     if "user" not in session:
         return redirect("/")
     return render_template("dashboard.html")
+
 
 # =========================
 # PREDICT
@@ -47,27 +48,32 @@ def predict():
         return redirect("/dashboard")
 
     try:
-        # Save image
+        # Save image locally (for display)
         filename = str(uuid.uuid4()) + ".jpg"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # 🔥 Send to Hugging Face
+        # 🔥 Send to Hugging Face (CORRECT FORMAT)
         with open(filepath, "rb") as img:
             response = requests.post(
                 HF_API_URL,
-                json={
-                    "data": [img.read()]
-                }
+                files={"file": img}   # ✅ IMPORTANT FIX
             )
 
-        result = response.json()
+        # Debug print
+        print("HF RESPONSE:", response.text)
 
-        # 👉 Extract prediction safely
-        output = result["data"][0]
+        # Try parsing response
+        try:
+            result = response.json()
+            output = str(result)
+        except:
+            output = response.text
 
-        # Simple logic (based on your model output)
-        if "Cancer" in str(output):
+        # =========================
+        # RESULT LOGIC
+        # =========================
+        if "Cancer" in output or "Detected" in output:
             cancer_status = "YES"
             risk = "High Risk Lesion Detected"
         else:
@@ -84,7 +90,8 @@ def predict():
 
     except Exception as e:
         print("ERROR:", e)
-        return "Server Error"
+        return "Server Error - Check logs"
+
 
 # =========================
 # RUN
