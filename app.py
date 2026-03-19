@@ -9,19 +9,17 @@ app.secret_key = "securekey123"
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ✅ YOUR HF SPACE API (CORRECT)
-HF_API_URL = "https://shruthipisara-oral-cancer-app.hf.space/run/predict"
+# ✅ YOUR HF SPACE API URL
+HF_API_URL = "https://shruthipisara-oral-cancer-app.hf.space/api/predict/"
 
 # =========================
-# LOGIN (NO RESTRICTION)
+# LOGIN (NO RESTRICTION - DEMO MODE)
 # =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        # ✅ Accept ANY username/password
-        session["user"] = request.form.get("username", "guest")
+        session["user"] = request.form["username"]  # accept any login
         return redirect("/dashboard")
-
     return render_template("login.html")
 
 
@@ -48,32 +46,26 @@ def predict():
         return redirect("/dashboard")
 
     try:
-        # Save image locally (for display)
+        # Save image
         filename = str(uuid.uuid4()) + ".jpg"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # 🔥 Send to Hugging Face (CORRECT FORMAT)
+        # ✅ CORRECT: Send image as file
         with open(filepath, "rb") as img:
             response = requests.post(
                 HF_API_URL,
-                files={"file": img}   # ✅ IMPORTANT FIX
+                files={"data": img}
             )
 
-        # Debug print
-        print("HF RESPONSE:", response.text)
+        result = response.json()
 
-        # Try parsing response
-        try:
-            result = response.json()
-            output = str(result)
-        except:
-            output = response.text
+        print("HF RESPONSE:", result)  # DEBUG
 
-        # =========================
-        # RESULT LOGIC
-        # =========================
-        if "Cancer" in output or "Detected" in output:
+        # ✅ Extract output safely
+        output = str(result)
+
+        if "Cancer" in output:
             cancer_status = "YES"
             risk = "High Risk Lesion Detected"
         else:
@@ -83,14 +75,14 @@ def predict():
         return render_template(
             "result.html",
             image=filename,
-            confidence="From AI Model",
+            confidence="AI Generated",
             risk=risk,
             cancer_status=cancer_status
         )
 
     except Exception as e:
         print("ERROR:", e)
-        return "Server Error - Check logs"
+        return "Server Error"
 
 
 # =========================
