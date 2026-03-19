@@ -6,19 +6,27 @@ import requests
 app = Flask(__name__)
 app.secret_key = "securekey123"
 
+# =========================
+# FOLDERS
+# =========================
 UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+RESULT_FOLDER = "static/results"
 
-# ✅ YOUR HF SPACE API URL
-HF_API_URL = "https://shruthipisara-oral-cancer-app.hf.space/api/predict/"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(RESULT_FOLDER, exist_ok=True)
 
 # =========================
-# LOGIN (NO RESTRICTION - DEMO MODE)
+# HUGGING FACE API URL (CORRECT)
+# =========================
+HF_API_URL = "https://shruthipisara-oral-cancer-app.hf.space/run/predict"
+
+# =========================
+# LOGIN (DEMO MODE - ANY USER)
 # =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        session["user"] = request.form["username"]  # accept any login
+        session["user"] = request.form["username"]
         return redirect("/dashboard")
     return render_template("login.html")
 
@@ -34,7 +42,7 @@ def dashboard():
 
 
 # =========================
-# PREDICT
+# PREDICTION
 # =========================
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -46,12 +54,16 @@ def predict():
         return redirect("/dashboard")
 
     try:
-        # Save image
+        # -------------------------
+        # Save uploaded image
+        # -------------------------
         filename = str(uuid.uuid4()) + ".jpg"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # ✅ CORRECT: Send image as file
+        # -------------------------
+        # Send to Hugging Face
+        # -------------------------
         with open(filepath, "rb") as img:
             response = requests.post(
                 HF_API_URL,
@@ -59,30 +71,56 @@ def predict():
             )
 
         result = response.json()
+        print("HF RESPONSE:", result)
 
-        print("HF RESPONSE:", result)  # DEBUG
+        # -------------------------
+        # Extract OUTPUTS
+        # -------------------------
+        output_image = result.get("data", ["", ""])[0]   # annotated image (base64)
+        output_text = result.get("data", ["", ""])[1]    # prediction text
 
-        # ✅ Extract output safely
-        output = str(result)
+        # -------------------------
+        # SAVE RESULT IMAGE (from HF)
+        # -------------------------
+        import base64
 
-        if "Cancer" in output:
+        if output_image.startswith("data:image"):
+            img_data = output_image.split(",")[1]
+            img_bytes = base64.b64decode(img_data)
+
+            result_filename = "result_" + filename
+            result_path = os.path.join(RESULT_FOLDER, result_filename)
+
+            with open(result_path, "wb") as f:
+                f.write(img_bytes)
+        else:
+            # fallback if image not returned
+            result_filename = filename
+
+        # -------------------------
+        # DECISION LOGIC
+        # -------------------------
+        if "Cancer" in output_text:
             cancer_status = "YES"
             risk = "High Risk Lesion Detected"
         else:
             cancer_status = "NO"
             risk = "Healthy / No Cancer Detected"
 
+        # -------------------------
+        # RETURN RESULT PAGE
+        # -------------------------
         return render_template(
             "result.html",
-            image=filename,
-            confidence="AI Generated",
+            image=result_filename,
+            confidence=output_text,
             risk=risk,
             cancer_status=cancer_status
         )
 
     except Exception as e:
-        print("ERROR:", e)
-        return "Server Error"
+        print("ERROR:", str(e))
+        return "Server Error - Check logs"
 
 
 # =========================
