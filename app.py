@@ -9,13 +9,12 @@ app.secret_key = "securekey123"
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# 👉 IMPORTANT: Replace this with your Hugging Face Space URL
-HF_API_URL = "https://YOUR-SPACE-URL/predict"
+# ✅ YOUR REAL HF SPACE API
+HF_API_URL = "https://shruthipisara-oral-cancer-app.hf.space/run/predict"
 
 # =========================
-# ROUTES
+# LOGIN
 # =========================
-
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -26,14 +25,18 @@ def login():
             return render_template("login.html", error="Invalid Credentials")
     return render_template("login.html")
 
-
+# =========================
+# DASHBOARD
+# =========================
 @app.route("/dashboard")
 def dashboard():
     if "user" not in session:
         return redirect("/")
     return render_template("dashboard.html")
 
-
+# =========================
+# PREDICT
+# =========================
 @app.route("/predict", methods=["POST"])
 def predict():
     if "user" not in session:
@@ -44,22 +47,27 @@ def predict():
         return redirect("/dashboard")
 
     try:
-        # Save uploaded image locally (for preview if needed)
+        # Save image
         filename = str(uuid.uuid4()) + ".jpg"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        # 🔥 Send image to Hugging Face Space
+        # 🔥 Send to Hugging Face
         with open(filepath, "rb") as img:
             response = requests.post(
                 HF_API_URL,
-                files={"file": img}
+                json={
+                    "data": [img.read()]
+                }
             )
 
-        result_text = response.text.strip()
+        result = response.json()
 
-        # Simple mapping
-        if "Cancer" in result_text:
+        # 👉 Extract prediction safely
+        output = result["data"][0]
+
+        # Simple logic (based on your model output)
+        if "Cancer" in str(output):
             cancer_status = "YES"
             risk = "High Risk Lesion Detected"
         else:
@@ -68,19 +76,18 @@ def predict():
 
         return render_template(
             "result.html",
-            image=filename,   # still show uploaded image
-            confidence="N/A",
+            image=filename,
+            confidence="From AI Model",
             risk=risk,
             cancer_status=cancer_status
         )
 
     except Exception as e:
-        print("ERROR:", str(e))
-        return "Server Error - Check logs"
-
+        print("ERROR:", e)
+        return "Server Error"
 
 # =========================
-# ENTRY POINT
+# RUN
 # =========================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
